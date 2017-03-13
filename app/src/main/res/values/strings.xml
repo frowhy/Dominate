@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">控制</string>
+    <string name="open_popup_window">开启悬浮窗</string>
+    <string name="close_popup_window">关闭悬浮窗</string>
+    <string name="frowhy_gmail_com">frowhy@gmail.com</string>
+</resources>
