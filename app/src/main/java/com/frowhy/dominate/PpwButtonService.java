@@ -23,7 +23,7 @@ import java.util.TimerTask;
 @SuppressWarnings("ALL")
 public class PpwButtonService extends Service {
 
-    public static FloatingActionButton gFabContent;
+    private FloatingActionButton gFabContent;
     private WindowManager mWindowManager;
     private WindowManager.LayoutParams mWindowParams;
     private View mWindowView;
@@ -68,17 +68,17 @@ public class PpwButtonService extends Service {
             private int mEndX;
             private int mEndY;
             private TimerTask mTask;
-            private int mCount = 0;
-            private boolean mIsDisplay;
+            private int mCount;
+            private boolean mIsMove;
             Handler handler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
-                    if (!mIsDisplay) {
+                    if (!mIsMove) {
                         if (mCount > 5) {
                             onLongClick();
-                            mIsDisplay = true;
+                            mIsMove = true;
                         } else {
-                            mCount += 1;
+                            mCount++;
                         }
                     }
                     super.handleMessage(msg);
@@ -110,7 +110,9 @@ public class PpwButtonService extends Service {
                         mWindowManager.updateViewLayout(mWindowView, mWindowParams);
                         mEndX = (int) motionEvent.getRawX();
                         mEndY = (int) motionEvent.getRawY();
-                        mIsDisplay = true;
+                        if (disX != 0 && disY != 0) {
+                            mIsMove = true;
+                        }
                         break;
                     case MotionEvent.ACTION_UP:
                         int x = (int) motionEvent.getRawX();
@@ -124,7 +126,7 @@ public class PpwButtonService extends Service {
                                 onClick();
                             }
                         }
-                        mIsDisplay = false;
+                        mIsMove = false;
                         timer.cancel();
                         timer.purge();
                         break;
@@ -135,11 +137,10 @@ public class PpwButtonService extends Service {
     }
 
     private void onClick() {
-        handle();
-        handle();
+        handlePlay();
     }
 
-    private void handle() {
+    private void handlePlay() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -153,8 +154,23 @@ public class PpwButtonService extends Service {
         }).start();
     }
 
+    private void handleNext() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Instrumentation inst = new Instrumentation();
+                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     private void onLongClick() {
-        handle();
+        handleNext();
     }
 
     @Override
