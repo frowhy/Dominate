@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
+        android:theme="@style/BtnAccent"
         android:text="@string/open_popup_window" />
 
     <TextView
