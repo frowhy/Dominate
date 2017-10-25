@@ -3,17 +3,22 @@ package com.frowhy.dominate;
 import android.app.Instrumentation;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.scalified.fab.FloatingActionButton;
 
@@ -31,6 +36,8 @@ public class PpwButtonService extends Service {
     private boolean mIsTouch;
     private ShellUtils shell;
     private Instrumentation inst;
+    SharedPreferences mSp;
+    boolean isPause=false;
 
 
 
@@ -44,6 +51,7 @@ public class PpwButtonService extends Service {
         addWindowView2Window();
         shell = new ShellUtils();
         inst = new Instrumentation();
+        mSp=getSharedPreferences(getPackageName(),MODE_PRIVATE);
     }
 
     private void initWindowParams() {
@@ -143,15 +151,54 @@ public class PpwButtonService extends Service {
         });
     }
 
+    long firstClickTime = 0;
+    long secondClickTime = 0;
+
     private void onClick() {
-        handlePlay();
+
+
+            if (firstClickTime > 0) {
+                secondClickTime = SystemClock.uptimeMillis();
+                if (secondClickTime - firstClickTime < 300) {
+                    Log.i("-----","双击");
+                    handleNext();
+                }
+                firstClickTime = 0;
+                return ;
+            }
+
+            firstClickTime = SystemClock.uptimeMillis();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(300);
+                        if(firstClickTime!=0) {
+                            Log.i("-----", "单击");
+                            handlePlay();
+                        }
+                        firstClickTime = 0;
+
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                }
+            }).start();
+        }
+
+    private void onLongClick() {
+        Log.i("-----","长按");
+        handlePre();
     }
 
     private void handlePlay() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                    presskey();
+                    presskey(0);
             }
         }).start();
     }
@@ -160,26 +207,71 @@ public class PpwButtonService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                    presskey();
-                    presskey();
+                    presskey(1);
             }
         }).start();
     }
 
-    private void presskey(){
+    private void handlePre() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                presskey(2);
+            }
+        }).start();
+    }
+
+    /**
+     * @param mode 0=暂停/播放 1=下一曲 2=上一曲 3=停止
+     */
+    private void presskey(int mode){
         try{
-         inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
-        } catch (Exception e) {
-            shell.simulateKey(KeyEvent.KEYCODE_HEADSETHOOK);
+            if(mSp.getBoolean("isUseRoot",false)){
+                switch (mode){
+                    case 0:
+                        shell.simulateKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+                        break;
+                    case 1:
+                        shell.simulateKey(KeyEvent.KEYCODE_MEDIA_NEXT);
+                        break;
+                    case 2:
+                        shell.simulateKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
+                        break;
+                    case 3:
+                        shell.simulateKey(KeyEvent.KEYCODE_MEDIA_STOP);
+                        break;
+
+                }
+
+
+            }else{
+                switch (mode){
+                    case 0:
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                        break;
+                    case 1:
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                        break;
+                    case 2:
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+                    break;
+                }
+
+            }
+
+        } catch (final Exception e) {
             e.printStackTrace();
+            new Handler(Looper.getMainLooper()).post(new Runnable(){
+                public void run(){
+                    Toast.makeText(getApplicationContext(),e.toString(), Toast.LENGTH_LONG).show();
+                }
+            });
         }
     }
 
-
-
-    private void onLongClick() {
-        handleNext();
-    }
 
     @Override
     public void onDestroy() {

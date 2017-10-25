@@ -2,5 +2,6 @@
     <string name="app_name">控制</string>
     <string name="open_popup_window">开启悬浮窗</string>
     <string name="close_popup_window">关闭悬浮窗</string>
-    <string name="frowhy_gmail_com">frowhy@gmail.com</string>
+    <string name="frowhy_gmail_com" translatable="false">frowhy@gmail.com</string>
+    <string name="isRootc">使用Root方式控制</string>
 </resources>

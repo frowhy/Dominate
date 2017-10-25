@@ -1,5 +1,7 @@
 package com.frowhy.dominate;
 
+import android.util.Log;
+
 import java.io.OutputStream;
 
 /**
@@ -37,6 +39,7 @@ public class ShellUtils {
      *            键值
      */
     public final void simulateKey(int keyCode) {
+        Log.i("---------","key event " + keyCode);
         exec("input keyevent " + keyCode + "\n");
     }
 }
