@@ -29,6 +29,11 @@ public class PpwButtonService extends Service {
     private View mWindowView;
     private int mStartX, mStartY;
     private boolean mIsTouch;
+    private ShellUtils shell;
+    private Instrumentation inst;
+
+
+
 
     @Override
     public void onCreate() {
@@ -37,6 +42,8 @@ public class PpwButtonService extends Service {
         initView();
         initClick();
         addWindowView2Window();
+        shell = new ShellUtils();
+        inst = new Instrumentation();
     }
 
     private void initWindowParams() {
@@ -144,12 +151,7 @@ public class PpwButtonService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Instrumentation inst = new Instrumentation();
-                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                    presskey();
             }
         }).start();
     }
@@ -158,16 +160,22 @@ public class PpwButtonService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Instrumentation inst = new Instrumentation();
-                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
-                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                    presskey();
+                    presskey();
             }
         }).start();
     }
+
+    private void presskey(){
+        try{
+         inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HEADSETHOOK);
+        } catch (Exception e) {
+            shell.simulateKey(KeyEvent.KEYCODE_HEADSETHOOK);
+            e.printStackTrace();
+        }
+    }
+
+
 
     private void onLongClick() {
         handleNext();
