@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dominate</string>
+    <string name="close_popup_window">Close FloatingWindow</string>
+    <string name="isRootc">Use RootPermission</string>
+    <string name="open_popup_window">Open FloatingWindow</string>
+</resources>
